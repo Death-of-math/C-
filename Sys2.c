@@ -33,6 +33,7 @@ void Sort_insert(STU *p, int n, char *major, int courseIndex);
 int main() {
     STU student[N];
     int choice, index, courseIndex;
+    int n = N;
 
     // 先初始化数据
     Input(student, N);
@@ -50,7 +51,10 @@ int main() {
         printf("7. 班级成绩综合查找\n");
         printf("8. 班级学生冒泡排序\n");
         printf("9. 修改班级最高分学生\n");
-        printf("10. 专业学生课程成绩直接插入排序\n"); // 新增选项
+        printf("10. 专业学生课程成绩直接插入排序\n"); 
+        printf("11. 增加学生信息\n");
+        printf("12. 删除学生信息\n");
+
         printf("请选择操作: ");
         scanf("%d", &choice);
 
@@ -220,6 +224,19 @@ int main() {
                 // 调用修改后的Sort_insert函数
                 Sort_insert(student, N, major, courseIndex);
                 break;
+            }
+
+            case 11:{
+            AddStudent(student, &n);
+            break;
+            }
+
+            case 12: {
+            char delName[15];
+            printf("请输入要删除的学生姓名: ");
+            scanf("%s", delName);
+            DeleteStudent(student, &n, delName);
+            break;
             }
 
             default:
@@ -477,5 +494,38 @@ void Sort_insert(STU *p, int n, char *major, int courseIndex) {
     
     for (int i = 0; i < count; i++) {
         Output(&stu_class_subject[i]);
+    }
+}
+
+void AddStudent(STU *p, int *n) {
+    if (*n >= N) {
+        printf("学生数量已满，无法添加！\n");
+        return;
+    }
+
+    printf("请输入新学生信息（学号 姓名 专业 班级 数学A 物理B 化学C）:\n");
+    scanf("%s %s %s %d %d %d %d", 
+        p[*n].num, p[*n].name, p[*n].major, &p[*n].classNo,
+        &p[*n].score[0], &p[*n].score[1], &p[*n].score[2]);
+
+    (*n)++;
+    printf("添加成功！当前总人数: %d\n", *n);
+}
+
+void DeleteStudent(STU *p, int *n, char *delName) {
+    int found = 0;
+    for (int i = 0; i < *n; i++) {
+        if (strcmp(p[i].name, delName) == 0) {
+            for (int j = i; j < *n - 1; j++) {
+                p[j] = p[j + 1];
+            }
+            (*n)--;
+            found = 1;
+            printf("学生 %s 已删除！当前总人数: %d\n", delName, *n);
+            break;
+        }
+    }
+    if (!found) {
+        printf("未找到该学生！\n");
     }
 }
