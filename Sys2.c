@@ -36,17 +36,17 @@ int main() {
     while(1) {
         printf("\n学生信息管理系统菜单\n");
         printf("1. 显示所有学生信息\n");
-        printf("2. 显示指定学生信息\n");
-        printf("3. 查找单科最高分学生\n");
-        printf("4. 所有学生按平均成绩排序\n");
-        printf("5. 按姓名查找学生信息\n");
-        printf("6. 查询某班级，大于某分数的学生\n");
-        printf("7. 某班级学生按平均成绩排序\n");
-        printf("8. 查询并修改某班级最高分学生成绩\n");
-        printf("9. 按专业+课程成绩排序\n"); 
-        printf("10. 增加学生信息\n");
-        printf("11. 删除学生信息\n");
-        printf("12. 将当前数据保存为新文件\n");
+        
+        printf("2. 查找单科最高分学生\n");
+        printf("3. 所有学生按平均成绩排序\n");
+        printf("4. 按姓名查找学生信息\n");
+        printf("5. 查询某班级，大于某分数的学生\n");
+        printf("6. 某班级学生按平均成绩排序\n");
+        printf("7. 查询并修改某班级最高分学生成绩\n");
+        printf("8. 按专业+课程成绩排序\n"); 
+        printf("9. 增加学生信息\n");
+        printf("10. 删除学生信息\n");
+        printf("11. 将当前数据保存为新文件\n");
         printf("0. 退出系统\n");
 
 
@@ -62,22 +62,7 @@ int main() {
                 }
                 break;
 
-            case 2:  // 查看单个学生
-                printf("请输入学生序号(0-%d): ", N-1);
-                scanf("%d", &index);
-                if(index < 0 || index >= N) {
-                    printf("无效序号!\n");
-                    break;
-                }
-                {
-                    STU s = Fetch(index);
-                    printf("\n%-16s %-14s %-12s %-7s %-9s %-9s %-8s\n", 
-                          "学号", "姓名", "专业", "班级", "数学A", "物理B", "化学C");
-                    Output(&s);
-                }
-                break;
-
-            case 3: {
+            case 2: {
                 int courseInput;
                 printf("请输入课程编号（1-数学A，2-物理B，3-化学C）: ");
                 scanf("%d", &courseInput);
@@ -87,7 +72,7 @@ int main() {
             }
 
 
-            case 4:  // 按平均成绩排序
+            case 3:  // 按平均成绩排序
                 Sort_select(student);
                 printf("已按平均成绩排序!\n");
 
@@ -109,7 +94,7 @@ int main() {
                 break;
 
             // 修改后的功能5：使用索引文件快速查找（先用索引文件查到序号，再用Fetch获取学生信息）
-            case 5: {
+            case 4: {
                 char key[30];  
                 printf("请输入要查找的姓名: ");
                 scanf("%s", key);
@@ -150,7 +135,7 @@ int main() {
             
             
 
-            case 6: {
+            case 5: {
                 int classNo;
                 char s;
                 int scoreSum;
@@ -169,7 +154,7 @@ int main() {
                 break;
             }
 
-            case 7: {
+            case 6: {
                 int classNo;
                 printf("请输入要排序的班级(1-2): ");
                 scanf("%d", &classNo);
@@ -182,7 +167,7 @@ int main() {
                 break;
             }
 
-            case 8: {
+            case 7: {
                 int classNo;
                 printf("请输入班级(1-2): ");
                 scanf("%d", &classNo);
@@ -195,7 +180,7 @@ int main() {
                 break;
             }
             
-            case 9: {
+            case 8: {
                 char major[10];
                 int courseIndex;
                 printf("请输入专业(computer/software/network): ");
@@ -213,12 +198,12 @@ int main() {
                 break;
             }
 
-            case 10:{
+            case 9:{
             AddStudent(student, &n);
             break;
             }
 
-            case 11: {
+            case 10: {
             char delName[15];
             printf("请输入要删除的学生姓名: ");
             scanf("%s", delName);
@@ -226,7 +211,7 @@ int main() {
             break;
             }
 
-            case 12:{
+            case 11:{
             Save(student, n);
             break;
             }
