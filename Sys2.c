@@ -26,6 +26,7 @@ void Sort_insert(STU *p, int n, char *major, int courseIndex);
 void AddStudent(STU *p, int *n);
 void DeleteStudent(STU *p, int *n, char *delName);
 void Save(STU *p, int n);
+void ModifyStudentInfo(STU *p, int n, const char *name);
 
 
 int main() {
@@ -53,7 +54,10 @@ int main() {
         printf("8. 按专业+课程成绩排序\n"); 
         printf("9. 增加学生信息\n");
         printf("10. 删除学生信息\n");
-        printf("11. 将当前数据保存为新文件\n");
+        printf("11. 修改学生信息\n");
+        printf("12. 将当前数据保存为新文件\n");
+        
+
         printf("0. 退出系统\n");
 
 
@@ -218,11 +222,19 @@ int main() {
             break;
             }
 
-            case 11:{
-            Save(student, n);
+            case 11: {
+            char targetName[15];
+            printf("请输入要修改信息的学生姓名: ");
+            scanf("%s", targetName);
+            ModifyStudentInfo(student, n, targetName);
             break;
             }
 
+            case 12:{
+            Save(student, n);
+            break;
+            }
+            
             case 0:  // 退出
                 printf("系统已退出!\n");
                 return 0;
@@ -577,3 +589,26 @@ void Save(STU *p, int n) {
     printf("数据已保存到 %s 文件中。\n", filename);
 }
 
+void ModifyStudentInfo(STU *p, int n, const char *name) {
+    int found = 0;
+    for (int i = 0; i < n; i++) {
+        if (strcmp(p[i].name, name) == 0) {
+            printf("\n当前信息为：\n");
+            Output(&p[i]);
+
+            printf("\n请输入新的信息（学号 姓名 专业 班级 数学A 物理B 化学C）：\n");
+            scanf("%s %s %s %d %d %d %d", 
+                p[i].num, p[i].name, p[i].major, &p[i].classNo, 
+                &p[i].score[0], &p[i].score[1], &p[i].score[2]);
+
+            printf("信息已更新为：\n");
+            Output(&p[i]);
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("未找到姓名为 %s 的学生！\n", name);
+    }
+}
