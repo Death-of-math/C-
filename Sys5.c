@@ -13,7 +13,10 @@ typedef struct {
 } NameIndex;
 
 // 函数声明
- int Input(STU *p, const char *filename);
+void Input(STU *p, int n);
+int Max(STU *p, int scoreIndex);
+void Sort_insert(STU *p, int n, char *major);
+ int Input2(STU *p, const char *filename);
 void Output(STU *p);
 STU Fetch(int studentIndex);
 void MaxAll(STU *p, int courseIndex);
@@ -22,7 +25,7 @@ void Search(STU *p, int classNo, char s, int scoreSum);
 void Sort_buble(STU *p, int n);
 void ModifyTopStudent(STU *p, int classNo);
 void CreateNameIndex(const char *filename);
-void Sort_insert(STU *p, int n, char *major, int courseIndex);
+void Sort_insert2(STU *p, int n, char *major, int courseIndex);
 void AddStudent(STU *p, int *n);
 void DeleteStudent(STU *p, int *n, char *delName);
 void Save(STU *p, int n);
@@ -38,7 +41,7 @@ int main() {
     printf("请输入要打开的学生数据文件名（如 studentInit.dat）：");
     scanf("%s", currentFileName);
 
-    n = Input(student, currentFileName);
+    n = Input2(student, currentFileName);
     // 新增：创建姓名索引文件
     CreateNameIndex(currentFileName);
 
@@ -205,7 +208,7 @@ int main() {
                 }
                 
                 // 调用修改后的Sort_insert函数
-                Sort_insert(student, N, major, courseIndex);
+                Sort_insert2(student, N, major, courseIndex);
                 break;
             }
 
@@ -247,7 +250,7 @@ int main() {
     return 0;
 }
 
- int Input(STU *p, const char *filename) {
+ int Input2(STU *p, const char *filename) {
     FILE *fp = fopen(filename, "rb");
     if (!fp) {
         printf("无法打开文件: %s\n", filename);
@@ -502,7 +505,7 @@ void ModifyTopStudent(STU *p, int classNo) {
     printf("修改已保存到modify.dat文件!\n");
 }
 
-void Sort_insert(STU *p, int n, char *major, int courseIndex) {
+void Sort_insert2(STU *p, int n, char *major, int courseIndex) {
     // 局部变量
     STU stu_class_subject[N]; // 按某门课程成绩排序后的某个专业的学生信息
     int count = 0;            // 实际元素个数
@@ -619,22 +622,22 @@ void ModifyStudentInfo(STU *p, int n, const char *name) {
 
 //函数名适配器
 
-// Input_wrapper：调用原始 Input 函数，传入全局文件名
-void Input_wrapper(STU *p, int n) {
+// Input：调用原始 Input2 函数，传入全局文件名
+void Input(STU *p, int n) {
     extern char currentFileName[100];
-    if (Input(p, currentFileName) != 0) {
+    if (Input2(p, currentFileName) != 0) {
         printf("读取文件失败。\n");
     }
 }
 
-// Max_wrapper：包装 MaxAll，建议你返回第一个学生下标（可选）
-int Max_wrapper(STU *p, int scoreIndex) {
+// Max：包装 MaxAll
+int Max(STU *p, int scoreIndex) {
     MaxAll(p, scoreIndex);  // 原函数负责打印
-    return 0;  // 默认返回 0 或你补充逻辑
+    return 0;  // 默认返回 0 
 }
 
-// Sort_insert_wrapper：将课程索引默认设置为 0，符合要求的接口格式
-void Sort_insert_wrapper(STU *p, int n, char *major) {
+// Sort_insert：将课程索引默认设置为 0，符合要求的接口格式
+void Sort_insert(STU *p, int n, char *major) {
     int courseIndex = 0;  // 默认按第0门课程
-    Sort_insert(p, n, major, courseIndex);
+    Sort_insert2(p, n, major, courseIndex);
 }
