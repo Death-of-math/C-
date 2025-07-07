@@ -1,16 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "student.h"
 
-#define N 10
 
-typedef struct Student {
-    char num[15];       // 学号
-    char name[15];      // 姓名
-    char major[10];     // 专业(computer,software,network)
-    int classNo;        // 班级(1-2)
-    int score[3];       // 3门课的成绩(0-2)
-} STU;
 
 // 新增：姓名索引结构
 typedef struct {
@@ -22,7 +15,7 @@ typedef struct {
 void Input(STU *p, int n);
 void Output(STU *p);
 STU Fetch(int studentIndex);
-int Max(STU *p, int scoreIndex);
+void MaxAll(STU *p, int courseIndex);
 void Sort_select(STU *p);
 void Search(STU *p, int classNo, char s, int scoreSum);
 void Sort_buble(STU *p, int n);
@@ -43,17 +36,19 @@ int main() {
     while(1) {
         printf("\n学生信息管理系统菜单\n");
         printf("1. 显示所有学生信息\n");
-        printf("2. 查看单个学生信息\n");
+        printf("2. 显示指定学生信息\n");
         printf("3. 查找单科最高分学生\n");
-        printf("4. 按平均成绩排序\n");
-        printf("5. 按姓名查找学生\n");
-        printf("6. 退出系统\n");
-        printf("7. 班级成绩综合查找\n");
-        printf("8. 班级学生冒泡排序\n");
-        printf("9. 修改班级最高分学生\n");
-        printf("10. 专业学生课程成绩直接插入排序\n"); 
-        printf("11. 增加学生信息\n");
-        printf("12. 删除学生信息\n");
+        printf("4. 所有学生按平均成绩排序\n");
+        printf("5. 按姓名查找学生信息\n");
+        printf("6. 查询某班级，大于某分数的学生\n");
+        printf("7. 某班级学生按平均成绩排序\n");
+        printf("8. 查询并修改某班级最高分学生成绩\n");
+        printf("9. 按专业+课程成绩排序\n"); 
+        printf("10. 增加学生信息\n");
+        printf("11. 删除学生信息\n");
+        printf("12. 将当前数据保存为新文件\n");
+        printf("0. 退出系统\n");
+
 
         printf("请选择操作: ");
         scanf("%d", &choice);
@@ -82,21 +77,15 @@ int main() {
                 }
                 break;
 
-            case 3:  // 查找单科最高分
-                printf("请输入课程编号(0-2): ");
-                scanf("%d", &courseIndex);
-                if(courseIndex < 0 || courseIndex > 2) {
-                    printf("无效课程编号!\n");
-                    break;
-                }
-                {
-                    int maxIndex = Max(student, courseIndex);
-                    printf("\n%-16s %-14s %-12s %-7s %-9s %-9s %-8s\n", 
-                          "学号", "姓名", "专业", "班级", "数学A", "物理B", "化学C");
-                    Output(&student[maxIndex]);
-                    printf("课程%d最高分: %d\n", courseIndex, student[maxIndex].score[courseIndex]);
-                }
+            case 3: {
+                int courseInput;
+                printf("请输入课程编号（1-数学A，2-物理B，3-化学C）: ");
+                scanf("%d", &courseInput);
+                int courseIndex = courseInput - 1; // 用户输入1~3，内部转成0~2
+                MaxAll(student, courseIndex);
                 break;
+            }
+
 
             case 4:  // 按平均成绩排序
                 Sort_select(student);
@@ -159,11 +148,9 @@ int main() {
                 break;
             }
             
-            case 6:  // 退出
-                printf("系统已退出!\n");
-                return 0;
+            
 
-            case 7: {
+            case 6: {
                 int classNo;
                 char s;
                 int scoreSum;
@@ -182,7 +169,7 @@ int main() {
                 break;
             }
 
-            case 8: {
+            case 7: {
                 int classNo;
                 printf("请输入要排序的班级(1-2): ");
                 scanf("%d", &classNo);
@@ -195,7 +182,7 @@ int main() {
                 break;
             }
 
-            case 9: {
+            case 8: {
                 int classNo;
                 printf("请输入班级(1-2): ");
                 scanf("%d", &classNo);
@@ -208,7 +195,7 @@ int main() {
                 break;
             }
             
-            case 10: {
+            case 9: {
                 char major[10];
                 int courseIndex;
                 printf("请输入专业(computer/software/network): ");
@@ -226,18 +213,27 @@ int main() {
                 break;
             }
 
-            case 11:{
+            case 10:{
             AddStudent(student, &n);
             break;
             }
 
-            case 12: {
+            case 11: {
             char delName[15];
             printf("请输入要删除的学生姓名: ");
             scanf("%s", delName);
             DeleteStudent(student, &n, delName);
             break;
             }
+
+            case 12:{
+            Save(student, n);
+            break;
+            }
+
+            case 0:  // 退出
+                printf("系统已退出!\n");
+                return 0;
 
             default:
                 printf("无效选择!\n");
@@ -267,28 +263,48 @@ void Output(STU *p) {
 
 // 从文件随机读取学生信息
 STU Fetch(int studentIndex) {
+    STU s = {0};  // 防止野值
+    if(studentIndex < 0 || studentIndex >= N) {
+        printf("学生索引超出范围！\n");
+        return s;
+    }
+
     FILE *fp = fopen("studentInit.dat", "rb");
     if(fp == NULL) {
         printf("无法打开文件!\n");
-        exit(1);
+        return s;
     }
+
     fseek(fp, studentIndex * sizeof(STU), SEEK_SET);
-    STU s;
     fread(&s, sizeof(STU), 1, fp);
     fclose(fp);
     return s;
 }
 
+
 // 查找单科最高分学生
-int Max(STU *p, int scoreIndex) {
-    int maxIndex = 0;
-    for(int i = 1; i < N; i++) {
-        if(p[i].score[scoreIndex] > p[maxIndex].score[scoreIndex]) {
-            maxIndex = i;
+void MaxAll(STU *p, int scoreIndex) {
+    int maxScore = p[0].score[scoreIndex];
+
+    // 1. 找出最大分数
+    for (int i = 1; i < N; i++) {
+        if (p[i].score[scoreIndex] > maxScore) {
+            maxScore = p[i].score[scoreIndex];
         }
     }
-    return maxIndex;
+
+    // 2. 输出所有等于最大分数的学生
+    printf("\n课程最高分为 %d，获得该分数的学生有：\n", maxScore);
+    printf("%-16s %-14s %-12s %-7s %-9s %-9s %-8s\n", 
+          "学号", "姓名", "专业", "班级", "数学A", "物理B", "化学C");
+
+    for (int i = 0; i < N; i++) {
+        if (p[i].score[scoreIndex] == maxScore) {
+            Output(&p[i]);
+        }
+    }
 }
+
 
 // 按平均成绩排序
 void Sort_select(STU *p) {
@@ -411,6 +427,20 @@ void Sort_buble(STU *p, int classNo) {
               stu_class_ave[i].score[2],
               avg);
     }
+
+        // 保存排序结果到新文件
+    char filename[50];
+    sprintf(filename, "class%d_sorted.dat", classNo);
+    FILE *fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        printf("无法保存文件 %s！\n", filename);
+        return;
+    }
+
+    fwrite(stu_class_ave, sizeof(STU), count, fp);
+    fclose(fp);
+    printf("已将排序结果保存至文件：%s\n", filename);
+
 }
 
 // 功能3: 修改班级最高分学生
@@ -529,3 +559,22 @@ void DeleteStudent(STU *p, int *n, char *delName) {
         printf("未找到该学生！\n");
     }
 }
+
+void Save(STU *p, int n) {
+    char filename[50];
+    printf("请输入要保存的新文件名（如：abc.dat）：");
+    scanf("%s", filename);
+
+    FILE *fp = fopen(filename, "wb");
+    if (!fp) {
+        printf("文件创建失败！\n");
+        return;
+    }
+
+    fwrite(&n, sizeof(int), 1, fp);       // 先写入学生个数
+    fwrite(p, sizeof(STU), n, fp);        // 再写入学生数据
+
+    fclose(fp);
+    printf("数据已保存到 %s 文件中。\n", filename);
+}
+
