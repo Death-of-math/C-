@@ -3,16 +3,17 @@
 #include <string.h>
 #include "student.h"
 
+char currentFileName[100];  // 全局变量，用于保存当前使用的文件名
 
 
-// 新增：姓名索引结构
+// 姓名索引结构
 typedef struct {
     char name[15];      // 姓名
     long position;      // 在数据文件中的位置
 } NameIndex;
 
 // 函数声明
-void Input(STU *p, int n);
+ int Input(STU *p, const char *filename);
 void Output(STU *p);
 STU Fetch(int studentIndex);
 void MaxAll(STU *p, int courseIndex);
@@ -20,27 +21,33 @@ void Sort_select(STU *p);
 void Search(STU *p, int classNo, char s, int scoreSum);
 void Sort_buble(STU *p, int n);
 void ModifyTopStudent(STU *p, int classNo);
-void CreateNameIndex();
+void CreateNameIndex(const char *filename);
 void Sort_insert(STU *p, int n, char *major, int courseIndex);
+void AddStudent(STU *p, int *n);
+void DeleteStudent(STU *p, int *n, char *delName);
+void Save(STU *p, int n);
+
 
 int main() {
     STU student[N];
     int choice, index, courseIndex;
-    int n = N;
+    int n;
 
-    // 先初始化数据
-    Input(student, N);
+    printf("\n学生信息管理系统\n");
+    printf("请输入要打开的学生数据文件名（如 studentInit.dat）：");
+    scanf("%s", currentFileName);
+
+    n = Input(student, currentFileName);
     // 新增：创建姓名索引文件
-    CreateNameIndex();
+    CreateNameIndex(currentFileName);
 
     while(1) {
-        printf("\n学生信息管理系统菜单\n");
+        printf("\n学生信息管理系统\n");
         printf("1. 显示所有学生信息\n");
-        
         printf("2. 查找单科最高分学生\n");
         printf("3. 所有学生按平均成绩排序\n");
         printf("4. 按姓名查找学生信息\n");
-        printf("5. 查询某班级，大于某分数的学生\n");
+        printf("5. 查询某班级，总分大于某分数线的学生\n");
         printf("6. 某班级学生按平均成绩排序\n");
         printf("7. 查询并修改某班级最高分学生成绩\n");
         printf("8. 按专业+课程成绩排序\n"); 
@@ -228,16 +235,21 @@ int main() {
     return 0;
 }
 
-// 从文件读取学生信息
-void Input(STU *p, int n) {
-    FILE *fp = fopen("studentInit.dat", "rb");
-    if(fp == NULL) {
-        printf("无法打开文件!\n");
+ int Input(STU *p, const char *filename) {
+    FILE *fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        printf("无法打开文件: %s\n", filename);
         exit(1);
     }
-    fread(p, sizeof(STU), n, fp);
+
+    int n;
+    fread(&n, sizeof(int), 1, fp);           // ❶ 先读取学生个数
+    fread(p, sizeof(STU), n, fp);            // ❷ 再读取n个学生数据
     fclose(fp);
+    return n;                                // 返回读取的学生个数
 }
+
+
 
 // 输出单个学生信息
 void Output(STU *p) {
@@ -246,25 +258,28 @@ void Output(STU *p) {
           p->score[0], p->score[1], p->score[2]);
 }
 
-// 从文件随机读取学生信息
+extern char currentFileName[100];  // 引用主函数里的全局文件名
+
 STU Fetch(int studentIndex) {
-    STU s = {0};  // 防止野值
+    STU s = {0};
     if(studentIndex < 0 || studentIndex >= N) {
         printf("学生索引超出范围！\n");
         return s;
     }
 
-    FILE *fp = fopen("studentInit.dat", "rb");
+    FILE *fp = fopen(currentFileName, "rb");  // 使用全局文件名
     if(fp == NULL) {
-        printf("无法打开文件!\n");
+        printf("无法打开文件: %s\n", currentFileName);
         return s;
     }
 
-    fseek(fp, studentIndex * sizeof(STU), SEEK_SET);
+     fseek(fp, sizeof(int) + studentIndex * sizeof(STU), SEEK_SET);
+
     fread(&s, sizeof(STU), 1, fp);
     fclose(fp);
     return s;
 }
+
 
 
 // 查找单科最高分学生
@@ -310,9 +325,8 @@ void Sort_select(STU *p) {
     }
 }
 
-// 新增：创建姓名索引文件
-void CreateNameIndex() {
-    FILE *data_fp = fopen("studentInit.dat", "rb");
+void CreateNameIndex(const char *filename) {
+    FILE *data_fp = fopen(filename, "rb");
     FILE *index_fp = fopen("name_index.idx", "wb");
 
     if (!data_fp || !index_fp) {
