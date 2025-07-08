@@ -3,7 +3,7 @@
 #include <string.h>
 #include "student.h"
 
-char currentFileName[100];  // 全局变量，用于保存当前使用的文件名
+char currentFileName[100];  // 全局变量，用于保存当前使用的文件名qwq
 
 
 // 姓名索引结构
